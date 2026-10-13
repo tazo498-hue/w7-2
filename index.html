@@ -1,0 +1,932 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WORD QUEST 3.0 | Spaced Magic Adventure</title>
+<style>
+:root{
+ --ink:#39315f;--purple:#8558ed;--pink:#ff70b5;
+ --mint:#24bd96;--yellow:#ffd75a
+}
+*{box-sizing:border-box}
+body{
+ margin:0;min-height:100vh;color:var(--ink);
+ font-family:"Trebuchet MS","Malgun Gothic",sans-serif;
+ background:
+ radial-gradient(circle at 10% 10%,#fff0a3,transparent 25%),
+ radial-gradient(circle at 90% 15%,#ffc7e8,transparent 28%),
+ linear-gradient(135deg,#ffe1f2,#e0ddff 55%,#c8f7ee)
+}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:4px solid #ffbf35;outline-offset:3px}
+button:disabled{cursor:default;opacity:.65}
+.app{max-width:860px;margin:auto;padding:18px 14px 50px}
+.top{
+ display:flex;justify-content:space-between;align-items:center;
+ flex-wrap:wrap;gap:10px;margin-bottom:15px
+}
+.logo{font-size:25px;font-weight:1000;color:#7444d8;text-shadow:2px 2px white}
+.stats{display:flex;gap:7px;flex-wrap:wrap}
+.pill{
+ background:white;border:2px solid #ece0ff;border-radius:25px;
+ padding:9px 12px;font-size:14px;font-weight:900;
+ box-shadow:0 4px #d8c8f5
+}
+.track{height:17px;background:white;border-radius:30px;padding:3px;margin-bottom:22px}
+.fill{
+ height:100%;width:0;border-radius:30px;
+ background:linear-gradient(90deg,#55dcb2,#74baff,#a685ff);
+ transition:width .3s
+}
+.panel{
+ background:white;border:4px solid white;border-radius:30px;
+ padding:26px;box-shadow:0 12px #d3c2ed,0 20px 35px #48388a20
+}
+.center{text-align:center}
+h1{font-size:clamp(29px,6vw,46px);margin:12px 0}
+h2{font-size:clamp(23px,5vw,31px);margin:12px 0}
+p{line-height:1.65}
+.tag{
+ display:inline-block;background:#efe7ff;color:#7750d2;
+ border-radius:30px;padding:9px 15px;font-size:13px;font-weight:900
+}
+.subtitle{font-size:16px;color:#776a95;font-weight:800}
+.mascot{font-size:90px;margin:16px 0;animation:float 2.7s infinite}
+@keyframes float{50%{transform:translateY(-9px) rotate(3deg)}}
+.btn{
+ border:0;background:var(--purple);color:white;
+ border-radius:18px;padding:13px 19px;min-height:48px;
+ font-weight:900;font-size:16px;box-shadow:0 5px #5a35ae;
+ margin:4px
+}
+.btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 1px #5a35ae}
+.btn.pink{background:var(--pink);box-shadow:0 5px #ca408b}
+.btn.mint{background:var(--mint);box-shadow:0 5px #087d65}
+.btn.light{background:#f0e8ff;color:#7550bf;box-shadow:0 5px #d7c8f9}
+.worlds{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:23px 0}
+.world{
+ background:#faf7ff;border:3px solid #eaddff;border-radius:22px;
+ padding:16px 8px;text-align:center
+}
+.world .emoji{font-size:42px}
+.world strong{display:block;margin:8px 0}
+.world small{font-weight:800;color:#887c9d}
+.world.done{background:#e8fff4;border-color:#71dcb8}
+.world.active{background:#f0e8ff;border-color:#aa87f5}
+.scene{
+ min-height:185px;margin:20px 0;border-radius:26px;
+ background:linear-gradient(135deg,#fff0af,#ffd2e7,#d9d0ff);
+ display:flex;align-items:center;justify-content:center;
+ border:3px solid #f1e4ff;position:relative
+}
+.scene:before,.scene:after{
+ content:"✦";position:absolute;top:15px;left:28px;
+ font-size:35px;color:white
+}
+.scene:after{top:auto;left:auto;right:28px;bottom:15px}
+.art{font-size:clamp(65px,13vw,105px);animation:float 2.7s infinite}
+.speech{
+ background:#f5efff;border:2px solid #e6d8ff;
+ border-radius:20px;padding:19px;text-align:center;
+ font-size:clamp(17px,3vw,22px);font-weight:900;line-height:1.7
+}
+.context{
+ background:#fff5d8;border-radius:17px;
+ padding:13px 15px;margin:17px 0;
+ color:#795c27;font-size:14px;font-weight:800
+}
+.question{font-size:19px;font-weight:1000;margin:22px 0 15px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choice{
+ background:white;border:3px solid #e9defb;border-radius:21px;
+ min-height:115px;padding:14px 9px;
+ color:var(--ink);font-size:15px;font-weight:900;
+ box-shadow:0 5px #e9defb
+}
+.choice:hover:not(:disabled){background:#f8f3ff}
+.choice .emoji{display:block;font-size:38px;margin-bottom:9px}
+.choice.good{background:#e2fff1;border-color:#45cb9a;box-shadow:0 5px #28a779}
+.choice.bad{background:#ffe8f0;border-color:#ff91b1;box-shadow:0 5px #e77597}
+.feedback{
+ background:#e8fff4;border:2px solid #84dfb4;
+ border-radius:19px;padding:16px;margin-top:18px;
+ font-weight:800;line-height:1.65
+}
+.feedback.error{background:#fff0f4;border-color:#ffb0c8}
+.controls{display:flex;flex-wrap:wrap;gap:7px;margin-top:17px}
+.controls .btn{font-size:14px;padding:10px 13px}
+.timeline{display:grid;gap:12px;margin:22px 0}
+.timecard{
+ background:#faf7ff;border:3px solid #e9dffc;
+ border-radius:20px;padding:17px
+}
+.timecard.open{background:#eafff5;border-color:#52d4aa}
+.timecard.done{background:#edf6ff;border-color:#9ac4ff}
+.timecard strong{display:block;margin-bottom:7px}
+.timecard small{color:#776a96;font-weight:800}
+.notice{
+ background:#f0f8ff;border-radius:17px;
+ padding:15px;margin:17px 0;font-size:14px;line-height:1.7
+}
+.reward{font-size:80px;margin:20px 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:22px 0}
+.chip{
+ background:#efe8ff;color:#7550c5;border-radius:25px;
+ padding:9px 13px;font-size:14px;font-weight:900
+}
+.footer{text-align:center;margin-top:27px;font-size:13px;color:#897e9e;font-weight:800}
+@media(max-width:520px){
+ .panel{padding:19px 13px}
+ .top{justify-content:center}
+ .world strong{font-size:14px}
+ .choices{gap:8px}
+ .choice{font-size:14px;min-height:107px;padding:12px 7px}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*:before,*:after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<main class="app">
+ <header class="top">
+  <div class="logo">🌈 WORD QUEST 3.0</div>
+  <div class="stats">
+   <span class="pill" id="stars">⭐ 0</span>
+   <span class="pill" id="gems">💎 0</span>
+   <span class="pill" id="count">🗺️ 0/20</span>
+  </div>
+ </header>
+ <div class="track"><div class="fill" id="bar"></div></div>
+ <section id="screen" aria-live="polite"></section>
+ <div class="footer">✨ READ · LISTEN · EXPLORE · RETURN ✨</div>
+</main>
+
+<script>
+"use strict";
+
+/*
+ WORD QUEST 3.0
+
+ 20개 단어 × 3개 이야기 문맥
+
+ Day 0: 첫 탐험 + 교차 반복 + 종합 모험
+ Day 1: 복귀 퀘스트
+ Day 3: 복귀 퀘스트
+ Day 7: 복귀 퀘스트
+
+ 복귀 날짜는 첫 탐험 완료일을 기준으로 계산한다.
+ 1·3·7일은 교육용 예시 간격이다.
+
+ 목표 단어의 한국어 뜻을 직접 묻지 않는다.
+ 문장과 그림, 이야기 맥락을 활용한다.
+*/
+
+const worlds=[
+ {name:"마법 학교",icon:"🏰"},
+ {name:"신비한 숲",icon:"🌳"},
+ {name:"마법 연구실",icon:"🧪"},
+ {name:"드래곤 성",icon:"🐉"}
+];
+
+/*
+ 데이터:
+ [단어, 챕터, [장면1, 장면2, 장면3]]
+
+ 각 장면:
+ [이모지 그림, 영어 문장, 한국어 상황,
+  정답 [이모지, 행동], 오답 [이모지, 행동]]
+*/
+
+const raw=[
+["arrive",0,[
+ ["🏰🚌","The magic bus will arrive at school soon.","친구들이 학교 앞에서 버스를 기다려요.",["🚌🏰","학교 앞에서 버스를 맞이한다"],["🚀🌙","달로 날아간다"]],
+ ["🚆🎡","The train will arrive at the fun park at noon.","친구들이 놀이공원역에서 기차를 기다려요.",["🚆🎡","놀이공원역으로 마중 간다"],["🚢🌊","바다로 간다"]],
+ ["✈️🏝️","Our plane finally arrived on the island!","비행기가 긴 여행을 마치고 섬에 왔어요.",["🏝️🧳","섬의 공항에서 짐을 찾는다"],["🏫📚","학교에서 수업한다"]]
+]],
+["enter",0,[
+ ["🚪🏫","The classroom door is open. Let's enter!","교실 문이 열리고 안에서 음악이 들려요.",["🚪🏫","교실 안으로 들어간다"],["🏃🌳","학교 밖으로 달려간다"]],
+ ["🎪🎟️","Show your ticket and enter the circus tent!","서커스 공연이 곧 시작돼요.",["🎪🚶","천막 안으로 들어간다"],["🏠😴","집에 가서 잔다"]],
+ ["🏰🔑","The king says we can enter the secret room.","왕이 비밀 방의 문을 열어 주었어요.",["🔑🚪","비밀 방 안으로 들어간다"],["🌲🏃","숲으로 도망간다"]]
+]],
+["follow",0,[
+ ["🧙‍♀️🐾","I know the secret way. Follow me!","마법사가 앞장서서 복도를 걸어요.",["🧙‍♀️🚶","마법사 뒤를 따라간다"],["😴🛏️","복도에서 잠든다"]],
+ ["🐶🗺️","The puppy knows the way. Follow it!","강아지가 보물 지도를 물고 달려가요.",["🐶🚶","강아지 뒤를 따라간다"],["📺🍿","TV를 본다"]],
+ ["👩‍🏫🏛️","Follow your teacher to the museum!","선생님이 박물관으로 이동하고 있어요.",["👩‍🏫🚶","선생님 뒤를 따라간다"],["🏠🛏️","혼자 집으로 간다"]]
+]],
+["find",0,[
+ ["🔎🗝️","We need to find the golden key!","황금 열쇠가 책상 아래에서 반짝여요.",["🗝️🔎","열쇠를 찾아낸다"],["🧹🫧","바닥만 청소한다"]],
+ ["🐱📦","My cat is missing. Let's find her!","상자 뒤에서 고양이 울음소리가 들려요.",["🔎🐈","고양이를 찾아본다"],["🏀⛹️","농구를 한다"]],
+ ["📱🛋️","I can't find my phone. Where is it?","소파 아래에서 휴대전화가 진동해요.",["🛋️🔎","소파 아래를 살펴본다"],["🍕🍽️","피자를 먹는다"]]
+]],
+["choose",0,[
+ ["🚪🚪","There are two doors. Choose the blue one!","빨간 문과 파란 문이 있어요.",["🔵🚪","파란 문을 고른다"],["🔴🚪","빨간 문을 고른다"]],
+ ["🍓🍌","Choose one smoothie. I want strawberry!","딸기와 바나나 스무디가 있어요.",["🍓🥤","딸기 스무디를 고른다"],["🍌🥤","바나나 스무디를 고른다"]],
+ ["🎮🎲","Let's choose the racing game!","레이싱 게임과 퍼즐 게임이 있어요.",["🏎️🎮","레이싱 게임을 고른다"],["🧩🎲","퍼즐 게임을 고른다"]]
+]],
+["collect",1,[
+ ["🌳💎","We need five gems. Let's collect them!","숲길에 보석들이 흩어져 있어요.",["💎🧺","보석을 하나씩 모은다"],["💥🪨","보석을 부순다"]],
+ ["🍂🧺","Let's collect colorful leaves for our art project!","미술 시간에 사용할 낙엽이 있어요.",["🍂🧺","예쁜 낙엽을 주워 모은다"],["🗑️🎨","그림 도구를 버린다"]],
+ ["⭐🌌","Collect three stars to open the magic gate!","마법의 문을 열려면 별 세 개가 필요해요.",["⭐⭐⭐","별 세 개를 모은다"],["🌙😴","잠을 잔다"]]
+]],
+["carry",1,[
+ ["🐰📦","This box is heavy. Can you carry it?","토끼가 무거운 상자를 옮기지 못해요.",["📦💪","상자를 들어 옮긴다"],["🎨🖌️","상자에 그림을 그린다"]],
+ ["🎒📚","Please help me carry this heavy schoolbag!","친구가 무거운 가방 때문에 힘들어해요.",["🎒🤝","가방을 함께 들어 준다"],["🎈🎊","풍선을 터뜨린다"]],
+ ["🧺🍎","Can you carry these apples to Grandma?","할머니께 사과 바구니를 가져다드려야 해요.",["🧺🚶","바구니를 들고 할머니께 간다"],["🍎🗑️","사과를 버린다"]]
+]],
+["protect",1,[
+ ["🐣☔","It's raining! Let's protect the little bird!","아기 새가 차가운 비를 맞으며 떨고 있어요.",["☂️🐣","우산으로 비를 막아 준다"],["💦🐣","새에게 물을 뿌린다"]],
+ ["🐢🏖️","We must protect the baby turtles!","아기 거북들이 자동차 도로를 향해 가요.",["🛡️🐢","어른에게 도움을 요청한다"],["🚗🐢","거북을 도로로 보낸다"]],
+ ["🌳🌎","We should protect the forest animals.","숲에 쓰레기가 많아 동물들이 위험해요.",["🧤🗑️","어른과 함께 안전하게 청소한다"],["🔥🌳","숲에 불을 지른다"]]
+]],
+["dangerous",1,[
+ ["🌋🌉","Watch out! That old bridge is dangerous!","다리가 흔들리고 아래에는 용암이 있어요.",["🌼🛤️","안전한 다른 길을 찾는다"],["🌋🌉","흔들리는 다리를 건넌다"]],
+ ["⚡🌧️","Lightning is dangerous. Stay inside!","밖에 번개가 치고 있어요.",["🏠🧸","실내에 머문다"],["🌳⚡","큰 나무 아래로 달려간다"]],
+ ["🐍⚠️","That snake may be dangerous. Stay away!","낯선 뱀이 길가에 있어요.",["🚶↩️","멀리 떨어져 돌아간다"],["✋🐍","맨손으로 뱀을 잡는다"]]
+]],
+["safe",1,[
+ ["🏡🌪️","The storm is coming. This house is safe!","폭풍이 몰려오고 튼튼한 집이 가까이 있어요.",["🏡🧸","튼튼한 집 안으로 간다"],["🌪️🌳","폭풍 속 들판에 남는다"]],
+ ["🚦🚸","Wait for the green light. Then it's safe to cross!","횡단보도에 빨간불이 켜져 있어요.",["🟢🚶","초록불에 주변을 살피고 건넌다"],["🔴🏃","빨간불에 달려간다"]],
+ ["⛑️🚲","Wear your helmet to stay safe!","친구가 자전거를 타려고 해요.",["⛑️🚲","헬멧을 착용한다"],["🚲🙈","눈을 감고 자전거를 탄다"]]
+]],
+["prepare",2,[
+ ["🎩🪄","The magic show starts soon. Let's prepare everything!","마법 공연이 5분 뒤 시작돼요.",["🎩🪄","마법 도구를 미리 챙긴다"],["😴🛏️","잠을 잔다"]],
+ ["🎂🎈","Let's prepare a surprise for Mom's birthday!","내일 엄마의 생일 파티를 해요.",["🎈🎁","장식과 선물을 미리 챙긴다"],["🗑️🎂","케이크를 버린다"]],
+ ["🎒🚌","Prepare your bag for tomorrow's school trip!","내일 아침 일찍 소풍을 떠나요.",["🎒🧃","가방에 준비물을 챙긴다"],["📚🗑️","준비물을 모두 버린다"]]
+]],
+["mix",2,[
+ ["🧪🥄","Pour the two potions together. Mix them!","빨간 물약과 파란 물약을 같은 병에 넣었어요.",["🥄🧪","물약을 잘 저어 섞는다"],["🗑️🧪","물약을 버린다"]],
+ ["🥣🍪","Mix the flour, eggs, and milk to make cookies!","쿠키 재료를 그릇에 넣었어요.",["🥄🥣","재료를 골고루 섞는다"],["🚪🏃","그릇을 두고 나간다"]],
+ ["🎨🌈","Mix blue and yellow paint to make green!","파란 물감과 노란 물감이 있어요.",["🖌️🟢","두 물감을 함께 섞는다"],["🗑️🎨","물감을 모두 버린다"]]
+]],
+["discover",2,[
+ ["🗺️✨","Look! We can discover a secret room!","벽 뒤에서 빛이 새어 나와요.",["🧱🔎","숨겨진 방을 찾아낸다"],["😴🛏️","그 자리에서 잠든다"]],
+ ["🔭🪐","You might discover a new planet!","과학자가 망원경으로 우주를 관찰해요.",["🔭🪐","새로운 행성을 찾아본다"],["🍕🍽️","피자를 주문한다"]],
+ ["🦕🦴","The explorers discover dinosaur bones!","탐험가들이 땅속에서 커다란 뼈를 발견했어요.",["🦴🔎","새로 발견한 화석을 조사한다"],["⚽🏃","축구를 시작한다"]]
+]],
+["different",2,[
+ ["🐸🦄","These animals are different. One is a frog and one is a unicorn!","개구리와 유니콘이 서 있어요.",["🐸🦄","서로 다르게 생겼다고 말한다"],["🐸🐸","완전히 똑같다고 말한다"]],
+ ["👟👢","These shoes are different. One is red and one is blue!","빨간 신발과 파란 신발이 있어요.",["🔴🔵","색깔이 서로 다르다"],["🔴🔴","색깔이 같다"]],
+ ["🍎🍌","Apples and bananas look different!","사과와 바나나가 접시에 있어요.",["🍎🍌","두 과일의 생김새를 비교한다"],["🍎🍎","두 과일이 똑같다고 말한다"]]
+]],
+["important",2,[
+ ["📖🌟","This magic book is important. Don't lose it!","이 책이 없으면 마법의 문을 열 수 없어요.",["🎒📖","책을 소중하게 보관한다"],["🗑️📖","책을 버린다"]],
+ ["📱🚨","This message is important. Read it before the trip!","선생님이 소풍의 모임 장소를 알려주셨어요.",["📱👀","안내 메시지를 확인한다"],["🗑️📱","읽지 않고 삭제한다"]],
+ ["👩‍⚕️🏥","The doctor's instructions are important.","의사 선생님이 치료 안내를 해 주셨어요.",["👩‍⚕️👂","안내를 잘 듣고 보호자와 확인한다"],["🙉🏃","안내를 무시한다"]]
+]],
+["escape",3,[
+ ["🐉🏃","The dragon is coming! We must escape from the castle!","드래곤이 다가오고 비밀 출구가 열렸어요.",["🚪🏃","비밀 출구로 빠져나간다"],["🪑😴","의자에서 잠든다"]],
+ ["🐹🏠","The hamster escaped from its cage!","햄스터 우리 문이 열리고 햄스터가 달려가요.",["🐹💨","햄스터가 우리 밖으로 나왔다"],["🐹😴","햄스터가 우리 안에서 잔다"]],
+ ["🧙‍♂️🔒","We need to escape from the locked tower!","마법사가 탑을 잠갔지만 비밀 계단이 있어요.",["🪜🚪","계단으로 탑에서 빠져나간다"],["🛏️😴","탑에서 계속 잠을 잔다"]]
+]],
+["solve",3,[
+ ["🧩🔐","The door is locked. Let's solve this puzzle!","문에 2 + 3이라는 퍼즐이 있어요.",["🔢5","5를 입력한다"],["🔢8","8을 입력한다"]],
+ ["🕵️‍♀️🔎","The detective will solve the mystery!","탐정이 사라진 왕관의 단서를 조사해요.",["🔎👑","단서를 연결해 사건을 해결한다"],["🎮😴","조사를 멈추고 잠든다"]],
+ ["🤖🧩","Solve the robot's riddle to open the gate!","로봇이 4 + 4를 물어봐요.",["🔢8","8이라고 대답한다"],["🔢2","2라고 대답한다"]]
+]],
+["decide",3,[
+ ["🛤️🤔","We have two paths. We must decide which way to go!","왼쪽은 용암 길, 오른쪽은 튼튼한 다리예요.",["🌉➡️","튼튼한 다리로 가기로 한다"],["🌋⬅️","용암 길로 가기로 한다"]],
+ ["🎬🍿","Let's decide which movie to watch. I love space stories!","친구는 우주 이야기를 좋아해요.",["🚀🪐","우주 모험 영화를 고른다"],["🐟🌊","바닷속 다큐멘터리를 고른다"]],
+ ["🍕🍔","We need to decide what to eat. Everyone wants pizza!","친구들이 모두 피자를 먹고 싶어 해요.",["🍕😋","피자를 주문하기로 한다"],["🍔🤔","햄버거만 주문한다"]]
+]],
+["brave",3,[
+ ["🦁🛡️","The knight is brave. He helps his friends even when he is scared!","기사가 무섭지만 친구를 구하려고 해요.",["🛡️🐰","두려워도 친구를 돕는다"],["🙈🏃","친구를 두고 숨는다"]],
+ ["🎤🧒","Mina is nervous, but she is brave enough to sing on stage!","미나가 긴장하지만 무대에 서려고 해요.",["🎤🌟","용기를 내어 노래한다"],["🚪🙈","무대에서 도망간다"]],
+ ["🚒🐱","The brave firefighter helps the trapped kitten!","소방관이 안전 장비를 착용하고 구조 작업을 해요.",["🚒🐱","안전하게 새끼 고양이를 구조한다"],["🙈🏃","고양이를 두고 도망간다"]]
+]],
+["finally",3,[
+ ["🏆🎉","We passed every challenge. Finally, we are free!","모든 도전을 끝내고 마지막 문이 열렸어요.",["🎊🏆","드디어 탈출에 성공한다"],["🔄🏰","모험을 처음부터 시작한다"]],
+ ["🌱🌻","We watered the seed for weeks. Finally, a flower bloomed!","몇 주 동안 씨앗에 물을 주었어요.",["🌻✨","드디어 꽃이 피었다"],["🧊❄️","씨앗이 눈사람이 되었다"]],
+ ["🏃🏅","After a long race, Jina finally reached the finish line!","지나가 긴 달리기를 끝내고 결승선에 왔어요.",["🏁🏅","드디어 결승선을 통과한다"],["🛏️😴","경기 시작 전으로 돌아간다"]]
+]]
+];
+
+const words=raw.map(r=>({
+ word:r[0],
+ world:r[1],
+ scenes:r[2].map(s=>({
+  art:s[0],line:s[1],clue:s[2],
+  correct:s[3],wrong:s[4]
+ }))
+}));
+
+/* 챕터별 새 어휘 + 이전 어휘의 교차 재등장 */
+const journey=[];
+const repeats=[
+ [],
+ [0,5,2,7],
+ [10,3,6,12,1,9],
+ [15,11,4,17,8,13,16,14,18,19]
+];
+
+for(let chapter=0;chapter<4;chapter++){
+ for(let i=chapter*5;i<chapter*5+5;i++){
+  journey.push({kind:"first",index:i,scene:0});
+ }
+ repeats[chapter].forEach(i=>{
+  journey.push({kind:"repeat",index:i,scene:1});
+ });
+ journey.push({kind:"checkpoint",chapter});
+}
+
+/* 복습에서는 챕터 순서가 아닌 교차 순서를 사용 */
+const orders=[
+ [0,10,5,15,2,12,7,17,4,14,9,19,1,11,6,16,3,13,8,18],
+ [13,3,18,8,10,0,15,5,12,2,17,7,14,4,19,9,11,1,16,6],
+ [6,16,1,11,9,19,4,14,7,17,2,12,5,15,0,10,8,18,3,13],
+ [18,8,13,3,16,6,11,1,19,9,14,4,17,7,12,2,15,5,10,0]
+];
+
+const schedule=[
+ {day:1,title:"DAY 1",icon:"🌤️",desc:"다음 날의 마법 미션"},
+ {day:3,title:"DAY 3",icon:"🌙",desc:"3일 뒤의 비밀 탐험"},
+ {day:7,title:"DAY 7",icon:"🌈",desc:"7일 뒤 최종 보물찾기"}
+];
+
+const KEY="wordquest3_spaced_complete";
+
+function fresh(){
+ return {
+  cursor:0,firstCount:0,stars:0,gems:0,mistakes:0,
+  completedAt:null,
+  review:{cursor:0,score:0,completed:false},
+  delayed:Array.from({length:3},()=>({
+   cursor:0,score:0,completed:false
+  }))
+ };
+}
+
+function load(){
+ try{
+  const s=JSON.parse(localStorage.getItem(KEY));
+  if(!s||!Number.isInteger(s.cursor))return fresh();
+  const d=fresh();
+  return {
+   ...d,...s,
+   cursor:Math.max(0,Math.min(journey.length,s.cursor)),
+   firstCount:Math.max(0,Math.min(20,s.firstCount||0)),
+   review:{...d.review,...(s.review||{})},
+   delayed:d.delayed.map((x,i)=>({
+    ...x,...((s.delayed||[])[i]||{})
+   }))
+  };
+ }catch(e){return fresh()}
+}
+
+let state=load();
+let mode="home";
+let task=null;
+let solved=false;
+let attempts=0;
+let activeDelayed=-1;
+let optionOrder=[0,1];
+
+const screen=document.getElementById("screen");
+
+function save(){
+ try{localStorage.setItem(KEY,JSON.stringify(state))}
+ catch(e){}
+}
+
+function esc(s){
+ return String(s).replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",
+  '"':"&quot;","'":"&#39;"
+ })[c]);
+}
+
+function render(html){
+ screen.innerHTML='<div class="panel">'+html+'</div>';
+ document.getElementById("stars").textContent="⭐ "+state.stars;
+ document.getElementById("gems").textContent="💎 "+state.gems;
+ document.getElementById("count").textContent=
+  "🗺️ "+state.firstCount+"/20";
+ document.getElementById("bar").style.width=
+  (state.firstCount/20*100)+"%";
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function stopVoice(){
+ if("speechSynthesis" in window)speechSynthesis.cancel();
+}
+
+function speak(line){
+ if(!("speechSynthesis" in window)){
+  alert("이 브라우저는 영어 음성을 지원하지 않아요.");
+  return;
+ }
+ stopVoice();
+ const u=new SpeechSynthesisUtterance(line);
+ u.lang="en-US";
+ u.rate=.82;
+ u.pitch=1.06;
+ const v=speechSynthesis.getVoices();
+ u.voice=v.find(x=>x.lang==="en-US")||
+         v.find(x=>x.lang.startsWith("en"))||null;
+ speechSynthesis.speak(u);
+}
+
+function daysPassed(){
+ if(!state.completedAt)return 0;
+ const a=new Date();
+ const b=new Date(state.completedAt);
+ const today=Date.UTC(a.getFullYear(),a.getMonth(),a.getDate());
+ const start=Date.UTC(b.getFullYear(),b.getMonth(),b.getDate());
+ return Math.max(0,Math.floor((today-start)/86400000));
+}
+
+function daysUntil(day){
+ return Math.max(0,day-daysPassed());
+}
+
+function home(){
+ stopVoice();
+ mode="home";
+
+ const cards=worlds.map((w,i)=>{
+  const done=state.firstCount>=(i+1)*5;
+  const active=!done&&state.firstCount>=i*5;
+  return `
+   <div class="world ${done?"done":active?"active":""}">
+    <div class="emoji">${w.icon}</div>
+    <strong>LEVEL ${i+1}<br>${w.name}</strong>
+    <small>${done?"✅ CLEAR":active?"🎯 PLAY NOW":"🔒 LOCKED"}</small>
+   </div>`;
+ }).join("");
+
+ render(`
+  <div class="center">
+   <div class="tag">SPACED MAGIC ADVENTURE</div>
+   <div class="mascot">🦄🏰🌈</div>
+   <h1>WORD QUEST 3.0!</h1>
+   <div class="subtitle">마법 학교 대탈출</div>
+   <p>
+    영어를 듣고 읽으며 마법 세계를 탐험해 봐!<br>
+    알맞은 행동을 선택하면 다음 문이 열려.<br>
+    전에 만났던 단어가 새로운 장면에 또 나타날 거야.
+   </p>
+  </div>
+  <div class="worlds">${cards}</div>
+  <div class="center">
+   <button class="btn pink" onclick="continueJourney()">
+    ${state.completedAt?"🏆 탐험 결과 보기":
+      state.cursor?"🚀 모험 이어하기":"🚀 모험 시작!"}
+   </button>
+   <button class="btn light" onclick="resetGame()">🔄 초기화</button>
+  </div>
+  ${state.completedAt?`
+   <div class="notice">
+    📅 첫 탐험 완료:
+    ${new Date(state.completedAt).toLocaleDateString("ko-KR")}<br>
+    복습 마법 시계가 열렸어요!
+   </div>
+   <div class="center">
+    <button class="btn mint" onclick="reviewHub()">
+     🕒 분산 복습 마법 시계
+    </button>
+   </div>`:""}
+ `);
+}
+
+function continueJourney(){
+ if(state.completedAt)return adventureComplete();
+ nextJourney();
+}
+
+function nextJourney(){
+ if(state.cursor>=journey.length){
+  finishJourney();
+  return;
+ }
+ const step=journey[state.cursor];
+ if(step.kind==="checkpoint"){
+  checkpoint(step.chapter);
+  return;
+ }
+ task={
+  source:"journey",
+  index:step.index,
+  scene:step.scene,
+  kind:step.kind
+ };
+ showTask();
+}
+
+function showTask(){
+ stopVoice();
+ mode="task";
+ solved=false;
+ attempts=0;
+
+ const w=words[task.index];
+ const s=w.scenes[task.scene];
+ let heading="";
+ let count="";
+
+ if(task.source==="journey"){
+  heading=task.kind==="first"?
+   "✨ 새로운 마법 미션":"🔮 다시 만난 마법 미션";
+  count=`${state.cursor+1}/${journey.length}`;
+ }else if(task.source==="review"){
+  heading="🎲 DAY 0 종합 모험";
+  count=`${state.review.cursor+1}/20`;
+ }else{
+  heading="🕒 "+schedule[activeDelayed].title+" 복귀 퀘스트";
+  count=`${state.delayed[activeDelayed].cursor+1}/20`;
+ }
+
+ optionOrder=Math.random()<.5?[0,1]:[1,0];
+ const options=[s.correct,s.wrong];
+
+ const buttons=optionOrder.map((n,i)=>`
+  <button class="choice" id="choice${i}" onclick="pick(${i})">
+   <span class="emoji">${options[n][0]}</span>
+   ${esc(options[n][1])}
+  </button>
+ `).join("");
+
+ render(`
+  <div class="center">
+   <div class="tag">${heading} · ${count}</div>
+   <h2>${worlds[w.world].icon} ${worlds[w.world].name}</h2>
+   <p class="subtitle">영어 속 단서를 찾아 행동해 봐!</p>
+  </div>
+  <div class="scene"><div class="art">${s.art}</div></div>
+  <div class="speech">${esc(s.line)}</div>
+  <div class="center">
+   <button class="btn light" onclick="readTask()">🔊 영어 듣기</button>
+  </div>
+  <div class="context">💬 상황 단서: ${esc(s.clue)}</div>
+  <div class="question">🎯 What will you do?</div>
+  <div class="choices">${buttons}</div>
+  <div id="feedback"></div>
+  <div class="controls">
+   <button class="btn light" onclick="hint()">💡 힌트</button>
+   <button class="btn light" onclick="home()">🏠 월드맵</button>
+  </div>
+ `);
+}
+
+function readTask(){
+ if(task)speak(words[task.index].scenes[task.scene].line);
+}
+
+function hint(){
+ if(!task||solved)return;
+ const s=words[task.index].scenes[task.scene];
+ document.getElementById("feedback").innerHTML=`
+  <div class="feedback">
+   💡 그림과 문장 속 상황을 다시 살펴봐!<br>
+   ${esc(s.clue)}
+  </div>`;
+}
+
+function pick(i){
+ if(mode!=="task"||solved||!task)return;
+ const s=words[task.index].scenes[task.scene];
+ const box=document.getElementById("feedback");
+
+ if(optionOrder[i]!==0){
+  attempts++;
+  state.mistakes++;
+  save();
+  const b=document.getElementById("choice"+i);
+  b.classList.add("bad");
+  b.disabled=true;
+  box.innerHTML=`
+   <div class="feedback error">
+    🌈 다른 행동을 골라 보자!<br>
+    문장을 다시 들어 보면 단서가 보일 거야.
+    <div style="margin-top:10px">
+     <button class="btn light" onclick="readTask()">🔊 다시 듣기</button>
+    </div>
+   </div>`;
+  return;
+ }
+
+ solved=true;
+ document.querySelectorAll(".choice").forEach(b=>b.disabled=true);
+ document.getElementById("choice"+i).classList.add("good");
+
+ const earned=attempts===0?3:1;
+ state.stars+=earned;
+ state.gems++;
+
+ if(task.source==="journey"){
+  if(task.kind==="first")state.firstCount++;
+  state.cursor++;
+ }else if(task.source==="review"){
+  if(attempts===0)state.review.score++;
+  state.review.cursor++;
+ }else{
+  const d=state.delayed[activeDelayed];
+  if(attempts===0)d.score++;
+  d.cursor++;
+ }
+
+ save();
+
+ box.innerHTML=`
+  <div class="feedback">
+   🎉 GREAT JOB! ⭐ +${earned} · 💎 +1<br>
+   ${esc(s.line)}
+   <div style="margin-top:12px">
+    <button class="btn mint" onclick="nextTask()">
+     ➡️ 다음 모험
+    </button>
+   </div>
+  </div>`;
+
+ speak(s.line);
+
+ document.getElementById("stars").textContent="⭐ "+state.stars;
+ document.getElementById("gems").textContent="💎 "+state.gems;
+ document.getElementById("count").textContent="🗺️ "+state.firstCount+"/20";
+ document.getElementById("bar").style.width=
+  (state.firstCount/20*100)+"%";
+}
+
+function nextTask(){
+ if(!solved)return;
+ if(task.source==="journey")nextJourney();
+ else if(task.source==="review")nextReview();
+ else nextDelayed();
+}
+
+function checkpoint(chapter){
+ mode="checkpoint";
+ render(`
+  <div class="center">
+   <div class="tag">LEVEL ${chapter+1} CLEAR!</div>
+   <div class="reward">${worlds[chapter].icon}🏆✨</div>
+   <h1>CHAPTER CLEAR!</h1>
+   <h2>${worlds[chapter].name} 성공!</h2>
+   <p class="subtitle">
+    이야기 속 행동을 선택하며<br>
+    ${state.firstCount}개의 새로운 단어를 만났어!
+   </p>
+   <button class="btn pink" onclick="leaveCheckpoint()">
+    ${chapter===3?"🏆 탐험 완료!":"🚀 다음 세계로!"}
+   </button>
+  </div>`);
+}
+
+function leaveCheckpoint(){
+ if(mode!=="checkpoint")return;
+ state.cursor++;
+ save();
+ nextJourney();
+}
+
+function finishJourney(){
+ if(!state.completedAt)state.completedAt=Date.now();
+ state.cursor=journey.length;
+ save();
+ adventureComplete();
+}
+
+function adventureComplete(){
+ mode="complete";
+ const chips=words.map(w=>`<span class="chip">${w.word}</span>`).join("");
+ render(`
+  <div class="center">
+   <div class="tag">ALL WORLDS COMPLETE!</div>
+   <div class="reward">🏆👑🌈</div>
+   <h1>YOU DID IT!</h1>
+   <h2>마법 학교 대탈출 성공!</h2>
+   <p class="subtitle">
+    20개 단어를 여러 이야기에서 만났어!<br>
+    이제 새로운 문맥에서 다시 모험할 차례야.
+   </p>
+   <div class="chips">${chips}</div>
+   <p>⭐ ${state.stars} · 💎 ${state.gems}</p>
+   <div class="notice">
+    🕒 오늘의 종합 모험을 완료하고<br>
+    다음 날, 3일 뒤, 7일 뒤에 다시 만나자!
+   </div>
+   <button class="btn pink" onclick="reviewHub()">
+    🕒 분산 복습 시작
+   </button>
+   <button class="btn light" onclick="home()">🏠 월드맵</button>
+  </div>`);
+}
+
+/* DAY 0 종합 모험 */
+function startReview(){
+ if(!state.completedAt)return;
+ nextReview();
+}
+
+function nextReview(){
+ if(state.review.cursor>=20){
+  finishReview();
+  return;
+ }
+ const i=orders[0][state.review.cursor];
+ task={source:"review",index:i,scene:1};
+ showTask();
+}
+
+function finishReview(){
+ state.review.completed=true;
+ save();
+ mode="reviewResult";
+ render(`
+  <div class="center">
+   <div class="tag">DAY 0 REVIEW CLEAR!</div>
+   <div class="reward">🎲🌟🎉</div>
+   <h1>MAGIC REVIEW!</h1>
+   <h2>${state.review.score}/20</h2>
+   <p class="subtitle">
+    첫 시도에 성공한 미션: ${state.review.score}개<br>
+    틀린 미션도 다시 도전해서 모두 완료했어!
+   </p>
+   <div class="notice">
+    🌤️ 다음 날 다시 돌아오면<br>
+    새로운 장면에서 영어 단어를 만나게 돼.
+   </div>
+   <button class="btn pink" onclick="reviewHub()">
+    🕒 마법 시계 보기
+   </button>
+  </div>`);
+}
+
+/* DAY 1, 3, 7 복귀 퀘스트 */
+function startDelayed(i){
+ if(!state.completedAt||!state.review.completed)return;
+ if(i<0||i>2)return;
+ if(daysUntil(schedule[i].day)>0)return;
+
+ // 이전 복귀 퀘스트를 완료해야 다음 단계 시작
+ if(i>0&&!state.delayed[i-1].completed)return;
+
+ activeDelayed=i;
+ nextDelayed();
+}
+
+function nextDelayed(){
+ if(activeDelayed<0)return;
+
+ const d=state.delayed[activeDelayed];
+
+ if(d.cursor>=20){
+  finishDelayed();
+  return;
+ }
+
+ const i=orders[activeDelayed+1][d.cursor];
+
+ /*
+  첫 복귀는 두 번째 장면,
+  다음 복귀는 세 번째 장면,
+  마지막 복귀는 첫 번째와 세 번째 장면을
+  번갈아 제시한다.
+ */
+ let scene=activeDelayed===0?1:
+           activeDelayed===1?2:
+           d.cursor%2===0?2:0;
+
+ task={source:"delayed",index:i,scene};
+ showTask();
+}
+
+function finishDelayed(){
+ const d=state.delayed[activeDelayed];
+ d.completed=true;
+ save();
+
+ const title=schedule[activeDelayed].title;
+ const isLast=activeDelayed===2;
+
+ mode="delayedResult";
+
+ render(`
+  <div class="center">
+   <div class="tag">${title} COMPLETE!</div>
+   <div class="reward">${isLast?"👑🏆🌈":"🌟🎁✨"}</div>
+   <h1>${isLast?"MASTER WIZARD!":"QUEST CLEAR!"}</h1>
+   <h2>${d.score}/20</h2>
+   <p class="subtitle">
+    첫 시도 성공 ${d.score}개!<br>
+    20개의 미션을 모두 해결했어.
+   </p>
+   <div class="notice">
+    ${isLast?
+     "🎓 Day 0, Day 1, Day 3, Day 7의 모든 복귀 퀘스트를 완료했어!":
+     "🕒 다음 복귀 퀘스트에서도 새로운 장면이 기다리고 있어!"}
+   </div>
+   <button class="btn pink" onclick="reviewHub()">
+    🕒 마법 시계로 돌아가기
+   </button>
+  </div>`);
+}
+
+function reviewHub(){
+ if(!state.completedAt){
+  home();
+  return;
+ }
+
+ stopVoice();
+ mode="hub";
+
+ const day0=`
+  <div class="timecard ${state.review.completed?"done":"open"}">
+   <strong>🎲 DAY 0 · 종합 모험</strong>
+   <small>
+    ${state.review.completed?
+      "완료 · 첫 시도 성공 "+state.review.score+"/20":
+      "새로운 문맥에서 20개 단어 다시 만나기"}
+   </small>
+   <div style="margin-top:10px">
+    ${state.review.completed?
+      '<span class="tag">✅ 완료</span>':
+      '<button class="btn pink" onclick="startReview()">🎮 시작 / 이어하기</button>'}
+   </div>
+  </div>`;
+
+ const cards=schedule.map((s,i)=>{
+  const d=state.delayed[i];
+  const left=daysUntil(s.day);
+  const previousDone=i===0||state.delayed[i-1].completed;
+  const ready=left===0&&state.review.completed&&previousDone;
+
+  let info="";
+  let action="";
+
+  if(d.completed){
+   info=`완료 · 첫 시도 성공 ${d.score}/20`;
+   action='<span class="tag">✅ 완료</span>';
+  }else if(!state.review.completed){
+   info="먼저 Day 0 종합 모험을 완료해 줘.";
+   action='<span class="tag">🔒 잠김</span>';
+  }else if(!previousDone){
+   info="이전 복귀 퀘스트를 먼저 완료해 줘.";
+   action='<span class="tag">🔒 잠김</span>';
+  }else if(left>0){
+   info=`${left}일 후 열려요.`;
+   action='<span class="tag">⏳ 기다리는 중</span>';
+  }else{
+   info=`준비 완료! ${d.cursor}/20 진행`;
+   action=`<button class="btn mint" onclick="startDelayed(${i})">
+    🎮 시작 / 이어하기
+   </button>`;
+  }
+
+  return `
+   <div class="timecard ${d.completed?"done":ready?"open":""}">
+    <strong>${s.icon} ${s.title} · ${s.desc}</strong>
+    <small>${info}</small>
+    <div style="margin-top:10px">${action}</div>
+   </div>`;
+ }).join("");
+
+ const allDone=state.delayed.every(d=>d.completed);
+
+ render(`
+  <div class="center">
+   <div class="tag">SPACED PRACTICE</div>
+   <div class="mascot">🕒🪄</div>
+   <h1>마법 복습 시계</h1>
+   <p class="subtitle">
+    같은 단어를 다른 날, 다른 이야기에서 만나자!
+   </p>
+  </div>
+  <div class="timeline">
+   ${day0}
+   ${cards}
+  </div>
+  <div class="notice">
+   📅 첫 탐험 완료일:
+   ${new Date(state.completedAt).toLocaleDateString("ko-KR")}<br>
+   오늘은 첫 탐험으로부터 ${daysPassed()}일째야.<br>
+   복습 일정은 기기의 날짜를 기준으로 열려.
+  </div>
+  ${allDone?`
+   <div class="center">
+    <div class="reward">🏆🎓🌈</div>
+    <h2>모든 분산 복습 완료!</h2>
+   </div>`:""}
+  <div class="center">
+   <button class="btn light" onclick="home()">🏠 월드맵</button>
+  </div>
+ `);
+}
+
+function resetGame(){
+ if(!confirm("별, 보석, 학습 진행 기록을 모두 초기화할까요?"))return;
+ stopVoice();
+ state=fresh();
+ task=null;
+ activeDelayed=-1;
+ save();
+ home();
+}
+
+/* 앱 시작 */
+home();
+</script>
+</body>
+</html>
